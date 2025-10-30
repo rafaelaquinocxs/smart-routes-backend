@@ -43,10 +43,11 @@ app.register_blueprint(config_bp, url_prefix='/api')
 app.register_blueprint(routes_bp, url_prefix='/api')
 
 # Configurar banco de dados
-# Usar banco de dados em memória em produção ou SQLite localmente
-if os.getenv('FLASK_ENV') == 'production' or os.getenv('HEROKU'):
-    # Em produção, usar banco de dados em memória
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+# Usar DATABASE_URL do Heroku em produção ou SQLite localmente
+if os.getenv('DATABASE_URL'):
+    # Heroku Postgres usa 'postgres://', mas o SQLAlchemy 1.4+ requer 'postgresql://'
+    uri = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
+    app.config['SQLALCHEMY_DATABASE_URI'] = uri
 else:
     # Em desenvolvimento, usar arquivo SQLite
     db_dir = os.path.join(os.path.dirname(__file__), 'database')
