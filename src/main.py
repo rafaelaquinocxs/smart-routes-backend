@@ -75,14 +75,18 @@ def serve(path):
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        # Inicializar cliente MQTT em thread separada
-        from src.services.mqtt_service import MQTTService
-        mqtt_service = MQTTService(socketio, app)
-        mqtt_service.start()
-    
-    # Iniciar servidor Flask com SocketIO
-    # Usar porta dinâmica do Heroku ou 5000 localmente
-    port = int(os.getenv('PORT', 5000))
-    debug = os.getenv('FLASK_ENV') == 'development'
-    socketio.run(app, host='0.0.0.0', port=port, debug=debug)
+    # Em produção (Heroku), usar Gunicorn. Em desenvolvimento, usar SocketIO.
+    if os.getenv('FLASK_ENV') == 'development':
+        with app.app_context():
+            # Inicializar cliente MQTT em thread separada
+            from src.services.mqtt_service import MQTTService
+            mqtt_service = MQTTService(socketio, app)
+            mqtt_service.start()
+        
+        # Iniciar servidor Flask com SocketIO localmente
+        port = int(os.getenv('PORT', 5000))
+        socketio.run(app, host='0.0.0.0', port=port, debug=True)
+    else:
+        # Em produção, o Gunicorn vai iniciar o app
+        # Não executar nada aqui
+        pass
