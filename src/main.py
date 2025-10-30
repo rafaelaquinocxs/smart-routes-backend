@@ -7,8 +7,6 @@ from flask import Flask, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
-from fastapi import FastAPI
-from src.routes.mqtt import bp as mqtt_bp
 # Carregar variáveis de ambiente
 load_dotenv()
 
@@ -42,10 +40,19 @@ app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(containers_bp, url_prefix='/api')
 app.register_blueprint(dashboard_bp, url_prefix='/api')
 app.register_blueprint(config_bp, url_prefix='/api')
-app.register_blueprint(routes_bp)
+app.register_blueprint(routes_bp, url_prefix='/api')
 
 # Configurar banco de dados
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(os.path.dirname(__file__), 'database', 'app.db')}"
+# Usar banco de dados em memória em produção ou SQLite localmente
+if os.getenv('FLASK_ENV') == 'production' or os.getenv('HEROKU'):
+    # Em produção, usar banco de dados em memória
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+else:
+    # Em desenvolvimento, usar arquivo SQLite
+    db_dir = os.path.join(os.path.dirname(__file__), 'database')
+    os.makedirs(db_dir, exist_ok=True)
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(db_dir, 'app.db')}"
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
@@ -54,8 +61,11 @@ with app.app_context():
     db.create_all()
     
     # Inicializar configurações padrão
-    from src.services.config_service import ConfigService
-    ConfigService.initialize_default_configs()
+    try:
+        from src.services.config_service import ConfigService
+        ConfigService.initialize_default_configs()
+    except Exception as e:
+        print(f"Aviso: Não foi possível inicializar configurações padrão: {e}")
 
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
@@ -79,9 +89,12 @@ if __name__ == '__main__':
     if os.getenv('FLASK_ENV') == 'development':
         with app.app_context():
             # Inicializar cliente MQTT em thread separada
-            from src.services.mqtt_service import MQTTService
-            mqtt_service = MQTTService(socketio, app)
-            mqtt_service.start()
+            try:
+                from src.services.mqtt_service import MQTTService
+                mqtt_service = MQTTService(socketio, app)
+                mqtt_service.start()
+            except Exception as e:
+                print(f"Aviso: Não foi possível inicializar MQTT: {e}")
         
         # Iniciar servidor Flask com SocketIO localmente
         port = int(os.getenv('PORT', 5000))
