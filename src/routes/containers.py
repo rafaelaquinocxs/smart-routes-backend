@@ -215,8 +215,8 @@ def create_container():
     try:
         data = request.get_json()
         
-        # Validar dados obrigatórios
-        required_fields = ["uid", "nome_amigavel", "coordenada_x", "coordenada_y", "ativa", "nivel"]
+        # Validar dados obrigatórios do frontend
+        required_fields = ["uid", "name"]
         for field in required_fields:
             if field not in data:
                 return jsonify({
@@ -232,14 +232,24 @@ def create_container():
                 "error": "UID já existe"
             }), 400
         
+        # Mapear campos do frontend para o banco de dados
+        # Frontend envia: uid, name, location, latitude, longitude, container_type, dist_empty, dist_full
+        # Backend espera: uid, nome_amigavel, coordenada_x, coordenada_y, ativa, nivel
+        
+        nome_amigavel = data.get("name", "")
+        coordenada_x = data.get("latitude", 0.0)
+        coordenada_y = data.get("longitude", 0.0)
+        ativa = data.get("ativa", True)
+        nivel = data.get("nivel", 0)
+        
         # Criar container
         container = Container(
             uid=data["uid"],
-            nome_amigavel=data["nome_amigavel"],
-            coordenada_x=data["coordenada_x"],
-            coordenada_y=data["coordenada_y"],
-            ativa=data["ativa"],
-            nivel=data["nivel"]
+            nome_amigavel=nome_amigavel,
+            coordenada_x=coordenada_x,
+            coordenada_y=coordenada_y,
+            ativa=ativa,
+            nivel=nivel
         )
         
         db.session.add(container)
