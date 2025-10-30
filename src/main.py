@@ -30,7 +30,7 @@ app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'sta
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'smart-routes-secret-key-2024')
 
 # Configurar CORS
-CORS(app, origins="*")
+CORS(app, resources={r"/api/*": {"origins": "*"}, r"/health": {"origins": "*"}, r"/": {"origins": "*"}, r"/*": {"origins": "*"}})
 
 # Configurar SocketIO
 socketio = SocketIO(app, cors_allowed_origins="*")
