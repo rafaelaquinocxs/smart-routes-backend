@@ -35,6 +35,13 @@ CORS(app, resources={r"/api/*": {"origins": "*"}, r"/health": {"origins": "*"}, 
 # Configurar SocketIO
 socketio = SocketIO(app, cors_allowed_origins="*")
 
+@app.after_request
+def add_cors_headers(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
+
 # Registrar blueprints
 app.register_blueprint(user_bp, url_prefix='/api')
 app.register_blueprint(containers_bp, url_prefix='/api')
