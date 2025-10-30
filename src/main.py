@@ -82,4 +82,7 @@ if __name__ == '__main__':
         mqtt_service.start()
     
     # Iniciar servidor Flask com SocketIO
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    # Usar porta dinâmica do Heroku ou 5000 localmente
+    port = int(os.getenv('PORT', 5000))
+    debug = os.getenv('FLASK_ENV') == 'development'
+    socketio.run(app, host='0.0.0.0', port=port, debug=debug)
