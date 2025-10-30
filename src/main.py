@@ -58,7 +58,10 @@ db.init_app(app)
 
 # Criar tabelas
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+    except Exception as e:
+        print(f"Aviso: Não foi possível criar tabelas: {e}")
     
     # Inicializar configurações padrão
     try:
@@ -83,6 +86,10 @@ def serve(path):
         else:
             return "index.html not found", 404
 
+# Health check endpoint
+@app.route('/health')
+def health():
+    return {'status': 'ok'}, 200
 
 if __name__ == '__main__':
     # Em produção (Heroku), usar Gunicorn. Em desenvolvimento, usar SocketIO.
