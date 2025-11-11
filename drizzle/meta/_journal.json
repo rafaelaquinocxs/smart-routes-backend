@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1762863290341,
+      "tag": "0000_clean_drax",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1762863378907,
+      "tag": "0001_cultured_ronan",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1762870343113,
+      "tag": "0002_stormy_cassandra_nova",
+      "breakpoints": true
+    }
+  ]
+}
